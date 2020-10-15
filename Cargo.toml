@@ -1,0 +1,20 @@
+[package]
+name = "todo-unchained"
+description = "Experimental personal task list assistant"
+version = "0.0.1"
+authors = ["Michał Fita"]
+edition = "2018"
+license = "MIT/Apache 2.0"
+exclude = [".gitignore", "todo-unchained.db"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+dotenv = "^0.15.0"
+libsqlite3-sys = { version = "^0", features = ["bundled"] }
+diesel = { version = "^1.4.5", features = ["sqlite", "uuidv07", "chrono"] }
+diesel_migrations = "^1.4.0"
+chrono = { version = "^0.4.19", features = ["serde"] }
+serde = { version = "^1.0.116", features = ["derive"] }
+serde_json = { version = "^1.0.58" }
+uuid = { version = "^0.8.1", features = ["serde", "v4"] }
