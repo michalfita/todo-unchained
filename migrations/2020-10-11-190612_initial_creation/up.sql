@@ -17,9 +17,9 @@ end;
 
 -- labels table
 create table if not exists labels (
-    id     character(36) not null primary key,
-    parent character(36) references labels(id) on delete cascade,
-    name   varchar(256) not null,
+    id          character(36) not null primary key,
+    parent_id   character(36) references labels(id) on delete cascade,
+    name        varchar(256) not null,
     created_at  datetime default current_timestamp not null,
     updated_at  datetime default current_timestamp not null
 ) without rowid;
@@ -33,8 +33,8 @@ end;
 -- actions_labels table
 create table if not exists actions_labels (
     id          character(36) not null primary key,
-    action      character(36) not null references actions(id) on delete cascade,
-    label       character(36) not null references labels(id) on delete cascade,
+    action_id   character(36) not null references actions(id) on delete cascade,
+    label_id    character(36) not null references labels(id) on delete cascade,
     created_at  datetime default current_timestamp not null,
-    unique      (action, label)
+    unique      (action_id, label_id)
 ) without rowid;
