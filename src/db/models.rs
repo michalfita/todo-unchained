@@ -1,4 +1,4 @@
-use uuid::Uuid;
+use crate::uuid::Uuid;
 use serde::{Deserialize, Serialize};
 use diesel::prelude::*;
 use diesel::{Queryable, Insertable};
@@ -12,7 +12,7 @@ use super::schema::{
 #[derive(Debug, Deserialize, Serialize, Queryable, Insertable)]
 #[table_name = "actions"]
 pub struct Action {
-    pub id: String,
+    pub id: Uuid,
     pub title: String,
     pub description: Option<String>,
     pub created_at: NaiveDateTime,
@@ -26,7 +26,7 @@ impl Action {
     }
 
     pub fn by_id(id: &Uuid, conn: &SqliteConnection) -> Option<Self> {
-        if let Ok(record) = actions_dsl.find(id.to_hyphenated().to_string()).get_result::<Action>(conn)
+        if let Ok(record) = actions_dsl.find(id).get_result::<Action>(conn)
         {
             Some(record)
         } else {
@@ -35,9 +35,9 @@ impl Action {
     }
 
     pub fn create(title: &str, description: Option<&str>, conn: &SqliteConnection) -> Option<Self> {
-        let new_id = Uuid::new_v4();
+        let new_id = Uuid::new();
 
-        let action = Self::new_internal(&new_id.to_hyphenated().to_string(), title, description);
+        let action = Self::new_internal(&new_id, title, description);
 
         diesel::insert_into(actions_dsl)
             .values(&action)
@@ -47,9 +47,9 @@ impl Action {
         Self::by_id(&new_id, conn)
     }
 
-    fn new_internal(id: &str, title: &str, description: Option<&str>) -> Self {
+    fn new_internal(id: &Uuid, title: &str, description: Option<&str>) -> Self {
         Self {
-            id: id.into(),
+            id: *id,
             title: title.into(),
             description: description.map(Into::into),
             created_at: chrono::Local::now().naive_local(),
@@ -71,8 +71,8 @@ use super::schema::{
 #[table_name = "labels"]
 #[belongs_to(Label, foreign_key = "parent_id")]
 pub struct Label {
-    pub id: String,
-    parent_id: Option<String>, // TODO: we really need UUID heres
+    pub id: Uuid,
+    parent_id: Option<Uuid>,
     pub name: String,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
@@ -84,7 +84,7 @@ impl Label {
     }
 
     pub fn by_id(id: &Uuid, conn: &SqliteConnection) -> Option<Self> {
-        if let Ok(record) = labels_dsl.find(id.to_hyphenated().to_string()).get_result::<Label>(conn)
+        if let Ok(record) = labels_dsl.find(id).get_result::<Label>(conn)
         {
             Some(record)
         } else {
@@ -93,9 +93,9 @@ impl Label {
     }
 
     pub fn create(name: &str, parent: Option<&Label>, conn: &SqliteConnection) -> Option<Self> {
-        let new_id = Uuid::new_v4();
+        let new_id = Uuid::new();
 
-        let label = Self::new_internal(&new_id.to_hyphenated().to_string(), name, parent);
+        let label = Self::new_internal(&new_id, name, parent);
 
         diesel::insert_into(labels_dsl)
             .values(&label)
@@ -105,9 +105,9 @@ impl Label {
         Self::by_id(&new_id, conn)
     }
 
-    fn new_internal(id: &str, name: &str, parent: Option<&Label>) -> Self {
+    fn new_internal(id: &Uuid, name: &str, parent: Option<&Label>) -> Self {
         Self {
-            id: id.into(),
+            id: *id,
             name: name.into(),
             parent_id: parent.map(|pl| pl.id.clone()),
             created_at: chrono::Local::now().naive_local(),
@@ -129,9 +129,9 @@ use super::schema::{
 #[belongs_to(Action, foreign_key = "action_id")]
 #[belongs_to(Label, foreign_key = "label_id")]
 pub struct ActionLabel {
-    pub id: String,
-    pub action_id: String,
-    pub label_id: String,
+    pub id: Uuid,
+    pub action_id: Uuid,
+    pub label_id: Uuid,
     pub created_at: NaiveDateTime,
 }
 
@@ -141,7 +141,7 @@ impl ActionLabel {
     }
 
     pub fn by_id(id: &Uuid, conn: &SqliteConnection) -> Option<Self> {
-        if let Ok(record) = actions_labels_dsl.find(id.to_hyphenated().to_string()).get_result::<ActionLabel>(conn) {
+        if let Ok(record) = actions_labels_dsl.find(id).get_result::<ActionLabel>(conn) {
             Some(record)
         } else {
             None
@@ -149,9 +149,9 @@ impl ActionLabel {
     }
 
     pub fn create(action_id: Uuid, label_id: Uuid, conn: &SqliteConnection) -> Option<Self> {
-        let new_id = Uuid::new_v4();
+        let new_id = Uuid::new();
 
-        let action_label = Self::new_internal(&new_id.to_hyphenated().to_string(), action_id, label_id);
+        let action_label = Self::new_internal(new_id.clone(), action_id, label_id);
 
         diesel::insert_into(actions_labels_dsl)
             .values(&action_label)
@@ -161,11 +161,11 @@ impl ActionLabel {
         Self::by_id(&new_id, conn)
     }
     
-    fn new_internal(id: &str, action_id: Uuid, label_id: Uuid) -> Self {
+    fn new_internal(id: Uuid, action_id: Uuid, label_id: Uuid) -> Self {
         Self {
-            id: id.into(),
-            action_id: action_id.to_hyphenated().to_string(),
-            label_id: label_id.to_hyphenated().to_string(),
+            id: id,
+            action_id: action_id,
+            label_id: label_id,
             created_at: chrono::Local::now().naive_local(),
         }
     }

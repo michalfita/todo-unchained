@@ -1,6 +1,6 @@
 table! {
     actions (id) {
-        id -> Text,
+        id -> Binary,
         title -> Text,
         description -> Nullable<Text>,
         created_at -> Timestamp,
@@ -11,17 +11,17 @@ table! {
 
 table! {
     actions_labels (id) {
-        id -> Text,
-        action_id -> Text,
-        label_id -> Text,
+        id -> Binary,
+        action_id -> Binary,
+        label_id -> Binary,
         created_at -> Timestamp,
     }
 }
 
 table! {
     labels (id) {
-        id -> Text,
-        parent_id -> Nullable<Text>,
+        id -> Binary,
+        parent_id -> Nullable<Binary>,
         name -> Text,
         created_at -> Timestamp,
         updated_at -> Timestamp,
